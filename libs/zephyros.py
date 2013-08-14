@@ -11,6 +11,7 @@ import select
 import socket
 import threading
 
+
 class StoppableThread(threading.Thread):
 
     def __init__(self):
@@ -89,7 +90,7 @@ class Listener(StoppableThread):
             self.socket.connect((self._host, self._port))
         except:
             print "Can't connect. Is Zephyros running?"
-            sys.exit(1) # TODO: This won't work, or does it?
+            sys.exit(1)  # TODO: This won't work, or does it?
 
     def _close_tcp_socket(self):
         self.socket.close()
@@ -98,8 +99,8 @@ class Listener(StoppableThread):
 class Dispatcher(StoppableThread):
 
     def __init__(self):
-       super(Dispatcher, self).__init__()
-       self.registered_msg_ids = {}
+        super(Dispatcher, self).__init__()
+        self.registered_msg_ids = {}
 
     def run(self):
         while not self.stopped():
@@ -131,6 +132,7 @@ class Dispatcher(StoppableThread):
         # TODO: Handel missing msg_id's
         thread = self.registered_msg_ids[msg_id]
         thread.put_message(message)
+
 
 class Worker(StoppableThread):
 
@@ -330,10 +332,10 @@ class Screen(Proxy):
 class App(Proxy):
 
     def visible_windows(self):
-        return [Window(x) for x in  self._send_sync("visible_windows")]
+        return [Window(x) for x in self._send_sync("visible_windows")]
 
     def all_windows(self):
-        return [Window(x) for x in  self._send_sync("all_windows")]
+        return [Window(x) for x in self._send_sync("all_windows")]
 
     def title(self):
         return self._send_sync("title")
@@ -378,19 +380,19 @@ class Api(Proxy):
         return Window(self._send_sync('focused_window'))
 
     def visible_windows(self):
-        return [Window(x) for x in  self._send_sync('visible_windows')]
+        return [Window(x) for x in self._send_sync('visible_windows')]
 
     def all_windows(self):
-        return [Window(x) for x in  self._send_sync('all_windows')]
+        return [Window(x) for x in self._send_sync('all_windows')]
 
     def main_screen(self):
         return Screen(self._send_sync('main_screen'))
 
     def all_screens(self):
-        return [Screen(x) for x in  self._send_sync('all_screens')]
+        return [Screen(x) for x in self._send_sync('all_screens')]
 
     def running_apps(self):
-        return [App(x) for x in  self._send_sync('running_apps')]
+        return [App(x) for x in self._send_sync('running_apps')]
 
     def bind(self, key, mods, fn):
         def tmp_fn(obj):
@@ -399,20 +401,30 @@ class Api(Proxy):
 
     def choose_from(self, lst, title, lines, chars, fn):
         self._send_message([0, 'choose_from', lst, title, lines, chars],
-                callback=fn, infinite=False)
+                           callback=fn, infinite=False)
 
     def listen(self, event, fn):
         def tmp_fn(obj):
-            if   event == "window_created":     fn(Window(obj))
-            elif event == "window_minimized":   fn(Window(obj))
-            elif event == "window_unminimized": fn(Window(obj))
-            elif event == "window_moved":       fn(Window(obj))
-            elif event == "window_resized":     fn(Window(obj))
-            elif event == "app_launched":       fn(App(obj))
-            elif event == "app_died":           fn(App(obj))
-            elif event == "app_hidden":         fn(App(obj))
-            elif event == "app_shown":          fn(App(obj))
-            elif event == "screens_changed":    fn()
+            if event == "window_created":
+                fn(Window(obj))
+            elif event == "window_minimized":
+                fn(Window(obj))
+            elif event == "window_unminimized":
+                fn(Window(obj))
+            elif event == "window_moved":
+                fn(Window(obj))
+            elif event == "window_resized":
+                fn(Window(obj))
+            elif event == "app_launched":
+                fn(App(obj))
+            elif event == "app_died":
+                fn(App(obj))
+            elif event == "app_hidden":
+                fn(App(obj))
+            elif event == "app_shown":
+                fn(App(obj))
+            elif event == "screens_changed":
+                fn()
         self._send_message([0, 'listen', event], callback=tmp_fn)
 
 
@@ -445,4 +457,3 @@ dispatcher = Dispatcher()
 dispatcher.start()
 
 api = Api(None)
-
